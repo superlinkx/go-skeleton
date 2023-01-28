@@ -1,0 +1,5 @@
+{
+  "go.toolsManagement.autoUpdate": true,
+  "go.useLanguageServer": true,
+  "gopls": {"ui.semanticTokens": true},
+}
