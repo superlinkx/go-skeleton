@@ -14,7 +14,6 @@ type MessageRepository interface {
 }
 
 type Message struct {
-	ID      int64
 	Message string `json:"message"`
 }
 
@@ -30,12 +29,12 @@ func GetDatabaseMessage(ctx context.Context, messageRepo MessageRepository, id i
 	}
 }
 
-func GetEvenDatabaseMessages(ctx context.Context, messageRepo MessageRepository) ([]Message, error) {
+func GetOddDatabaseMessages(ctx context.Context, messageRepo MessageRepository) ([]Message, error) {
 	if messageIds, err := messageRepo.GetMessageIds(ctx); err != nil {
 		return []Message{}, fmt.Errorf("failed to get message ids: %w", err)
 	} else {
-		evenIds := filterEvenMessageIds(messageIds)
-		if messages, err := messageRepo.GetMessagesByIds(ctx, evenIds); err != nil {
+		oddIds := filterOddMessageIds(messageIds)
+		if messages, err := messageRepo.GetMessagesByIds(ctx, oddIds); err != nil {
 			return []Message{}, fmt.Errorf("failed to get messages by ids: %w", err)
 		} else {
 			resultMessages := make([]Message, 0, len(messages))
@@ -47,16 +46,16 @@ func GetEvenDatabaseMessages(ctx context.Context, messageRepo MessageRepository)
 	}
 }
 
-func filterEvenMessageIds(messageIds []int64) []int64 {
+func filterOddMessageIds(messageIds []int64) []int64 {
 	var (
-		evenIds = make([]int64, 0, len(messageIds)/2)
+		oddIds = make([]int64, 0, len(messageIds)/2)
 	)
 
 	for _, id := range messageIds {
-		if id%2 == 0 {
-			evenIds = append(evenIds, id)
+		if id%2 == 1 {
+			oddIds = append(oddIds, id)
 		}
 	}
 
-	return evenIds
+	return oddIds
 }

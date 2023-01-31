@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/superlinkx/go-skeleton/app"
 	"github.com/superlinkx/go-skeleton/services/jsonservice"
 	"github.com/superlinkx/go-skeleton/services/messages"
@@ -53,7 +55,17 @@ func (s MessagesHandlers) PostEcho(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s MessagesHandlers) GetDatabaseMessage(w http.ResponseWriter, r *http.Request) {
-	if message, err := messages.GetDatabaseMessage(r.Context(), s.AppContainer.Queries, 0); err != nil {
+	if messageId, err := strconv.Atoi(chi.URLParam(r, "messageId")); err != nil {
+		jsonservice.JSONErrorResponse(w, 400, fmt.Errorf("non-integer id specified: %w", err))
+	} else if message, err := messages.GetDatabaseMessage(r.Context(), s.AppContainer.Queries, int64(messageId)); err != nil {
+		jsonservice.JSONErrorResponse(w, 500, fmt.Errorf("invalid submission: %w", err))
+	} else if err := jsonservice.JSONResponse(w, message); err != nil {
+		jsonservice.JSONErrorResponse(w, 500, ErrInternalServer)
+	}
+}
+
+func (s MessagesHandlers) GetOddDatabaseMessages(w http.ResponseWriter, r *http.Request) {
+	if message, err := messages.GetOddDatabaseMessages(r.Context(), s.AppContainer.Queries); err != nil {
 		jsonservice.JSONErrorResponse(w, 500, fmt.Errorf("invalid submission: %w", err))
 	} else if err := jsonservice.JSONResponse(w, message); err != nil {
 		jsonservice.JSONErrorResponse(w, 500, ErrInternalServer)
