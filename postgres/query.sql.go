@@ -7,15 +7,17 @@ package postgres
 
 import (
 	"context"
+
+	"github.com/lib/pq"
 )
 
-const getMessage = `-- name: GetMessage :one
+const getMessageById = `-- name: GetMessageById :one
 SELECT id, message FROM "messages"
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetMessage(ctx context.Context, id int64) (Message, error) {
-	row := q.db.QueryRowContext(ctx, getMessage, id)
+func (q *Queries) GetMessageById(ctx context.Context, id int64) (Message, error) {
+	row := q.db.QueryRowContext(ctx, getMessageById, id)
 	var i Message
 	err := row.Scan(&i.ID, &i.Message)
 	return i, err
@@ -39,6 +41,34 @@ func (q *Queries) GetMessageIds(ctx context.Context) ([]int64, error) {
 			return nil, err
 		}
 		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMessagesByIds = `-- name: GetMessagesByIds :many
+SELECT id, message FROM "messages"
+WHERE id = ANY($1::bigint[])
+`
+
+func (q *Queries) GetMessagesByIds(ctx context.Context, dollar_1 []int64) ([]Message, error) {
+	rows, err := q.db.QueryContext(ctx, getMessagesByIds, pq.Array(dollar_1))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(&i.ID, &i.Message); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
