@@ -1,21 +1,20 @@
 package app
 
 import (
-	"database/sql"
-
-	"github.com/superlinkx/go-skeleton/database"
+	"github.com/superlinkx/go-skeleton/db"
+	"github.com/superlinkx/go-skeleton/postgres"
 )
 
 type AppContainer struct {
-	DB *sql.DB
+	Queries *postgres.Queries
 }
 
 func SetAppDependencies(dbConnStr string) (AppContainer, error) {
-	if db, err := database.NewDatabaseConnection(dbConnStr); err != nil {
+	if db, err := db.NewDatabaseConnection(dbConnStr); err != nil {
 		return AppContainer{}, err
 	} else {
 		return AppContainer{
-			DB: db,
+			Queries: postgres.New(db),
 		}, nil
 	}
 }

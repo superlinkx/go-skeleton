@@ -53,9 +53,7 @@ func (s MessagesHandlers) PostEcho(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s MessagesHandlers) GetDatabaseMessage(w http.ResponseWriter, r *http.Request) {
-	var ()
-
-	if message, err := messages.GetDatabaseMessage(s.AppContainer.DB); err != nil {
+	if message, err := messages.GetDatabaseMessage(r.Context(), s.AppContainer.Queries, 0); err != nil {
 		jsonservice.JSONErrorResponse(w, 500, fmt.Errorf("invalid submission: %w", err))
 	} else if err := jsonservice.JSONResponse(w, message); err != nil {
 		jsonservice.JSONErrorResponse(w, 500, ErrInternalServer)

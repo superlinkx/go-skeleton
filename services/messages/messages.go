@@ -1,12 +1,15 @@
 package messages
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
+
+	"github.com/superlinkx/go-skeleton/postgres"
 )
 
-type Queryer interface {
-	Query(string, ...any) (*sql.Rows, error)
+type MessageRepository interface {
+	GetMessage(context.Context, int64) (postgres.Message, error)
+	GetMessageIds(context.Context) ([]int64, error)
 }
 
 type Message struct {
@@ -17,19 +20,10 @@ func GetHelloMessage() Message {
 	return Message{Message: "Welcome to the API"}
 }
 
-func GetDatabaseMessage(queryer Queryer) (Message, error) {
-	if rows, err := queryer.Query("SELECT message FROM messages LIMIT(1);"); err != nil {
-		return Message{}, fmt.Errorf("failed to execute query: %w", err)
+func GetDatabaseMessage(ctx context.Context, messageRepo MessageRepository, id int64) (Message, error) {
+	if message, err := messageRepo.GetMessage(ctx, id); err != nil {
+		return Message{}, fmt.Errorf("failed to get message (id=%d): %w", id, err)
 	} else {
-		var message string
-		defer rows.Close()
-		rows.Next()
-		if err := rows.Scan(&message); err != nil {
-			return Message{}, fmt.Errorf("error while scanning message: %w", err)
-		} else {
-			return Message{
-				Message: message,
-			}, nil
-		}
+		return Message{Message: message.Message}, nil
 	}
 }
