@@ -10,7 +10,7 @@ import (
 const dbConnStr = "postgres://postgres:postgres@localhost/postgres?sslmode=disable"
 
 func main() {
-	if appContainer, err := app.SetAppDependencies(dbConnStr); err != nil {
+	if appContainer, err := app.NewApp(dbConnStr); err != nil {
 		log.Fatalf("failed to set app dependencies: %s", err.Error())
 	} else {
 		server.StartServer(appContainer)

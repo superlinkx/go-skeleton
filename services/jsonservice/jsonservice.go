@@ -17,14 +17,15 @@ type ErrorMessage struct {
 
 func JSONResponse(w http.ResponseWriter, message any) error {
 	if result, err := json.Marshal(message); err != nil {
-		return fmt.Errorf("error marshalling JSON response: %w", err)
+		return fmt.Errorf("failed to marshal JSON response: %w", err)
+	} else if _, err := w.Write(result); err != nil {
+		return fmt.Errorf("failed to write JSON result: %w", err)
 	} else {
-		w.Write(result)
 		return nil
 	}
 }
 
-func JSONErrorResponse(w http.ResponseWriter, code int, err error) {
+func JSONErrorResponse(w http.ResponseWriter, code int, err error) error {
 	var (
 		errorMessage = ErrorMessage{
 			ErrorMessage: err.Error(),
@@ -34,9 +35,17 @@ func JSONErrorResponse(w http.ResponseWriter, code int, err error) {
 
 	if result, err := json.Marshal(errorMessage); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(DefaultInternalServerError)
+		if _, err := w.Write(DefaultInternalServerError); err != nil {
+			return fmt.Errorf("failed to write JSON result while processing an error writing an: %w", err)
+		} else {
+			return nil
+		}
 	} else {
 		w.WriteHeader(code)
-		w.Write(result)
+		if _, err := w.Write(result); err != nil {
+			return fmt.Errorf("failed to write error JSON result: %w", err)
+		} else {
+			return nil
+		}
 	}
 }
