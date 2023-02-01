@@ -1,3 +1,16 @@
+### Get root
+GET http://localhost:8888/
+
+### Get database message for id 1
+GET http://localhost:8888/database-message/1
+
+### Get database messsage for id 6
+GET http://localhost:8888/database-message/6
+
+### Get database messages with odd ids
+GET http://localhost:8888/database-odd-messages
+
+### Post a message to echo
 POST http://localhost:8888/echo
 content-type: application/json
 
