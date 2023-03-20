@@ -9,23 +9,29 @@ import (
 )
 
 type AppContainer struct {
-	queries *postgres.Queries
+	messages MessageServicer
+}
+
+type MessageServicer interface {
+	GetDatabaseMessage(context.Context, int64) (messages.Message, error)
+	GetOddDatabaseMessages(context.Context) ([]messages.Message, error)
 }
 
 func NewApp(dbConnStr string) (AppContainer, error) {
 	if db, err := db.NewDatabaseConnection(dbConnStr); err != nil {
 		return AppContainer{}, err
 	} else {
+		queries := postgres.New(db)
 		return AppContainer{
-			queries: postgres.New(db),
+			messages: messages.NewMessageService(queries),
 		}, nil
 	}
 }
 
 func (s AppContainer) GetDatabaseMessage(ctx context.Context, id int64) (messages.Message, error) {
-	return messages.GetDatabaseMessage(ctx, s.queries, id)
+	return s.messages.GetDatabaseMessage(ctx, id)
 }
 
 func (s AppContainer) GetOddDatabaseMessages(ctx context.Context) ([]messages.Message, error) {
-	return messages.GetOddDatabaseMessages(ctx, s.queries)
+	return s.messages.GetOddDatabaseMessages(ctx)
 }

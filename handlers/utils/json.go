@@ -1,8 +1,9 @@
-package jsonservice
+package utils
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -25,7 +26,7 @@ func JSONResponse(w http.ResponseWriter, message any) error {
 	}
 }
 
-func JSONErrorResponse(w http.ResponseWriter, code int, err error) error {
+func JSONErrorResponse(w http.ResponseWriter, code int, err error) {
 	var (
 		errorMessage = ErrorMessage{
 			ErrorMessage: err.Error(),
@@ -36,16 +37,12 @@ func JSONErrorResponse(w http.ResponseWriter, code int, err error) error {
 	if result, err := json.Marshal(errorMessage); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		if _, err := w.Write(DefaultInternalServerError); err != nil {
-			return fmt.Errorf("failed to write JSON result while processing an error writing an: %w", err)
-		} else {
-			return nil
+			log.Printf("Failed to write JSON result while processing an error writing an: %s", err)
 		}
 	} else {
 		w.WriteHeader(code)
 		if _, err := w.Write(result); err != nil {
-			return fmt.Errorf("failed to write error JSON result: %w", err)
-		} else {
-			return nil
+			log.Printf("Failed to write error JSON result: %s", err)
 		}
 	}
 }
