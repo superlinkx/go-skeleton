@@ -8,6 +8,7 @@ FROM mcr.microsoft.com/devcontainers/go:0-1.19-bullseye
 USER vscode
 RUN go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
 RUN go install github.com/rubenv/sql-migrate/...@latest
+RUN go install github.com/golang/mock/mockgen@latest
 USER root
 
 # [Optional] Uncomment this line to install global node packages.
