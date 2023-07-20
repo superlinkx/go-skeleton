@@ -57,7 +57,7 @@ func getIntegrationTestDatabaseURL() string {
 	var connStr string
 
 	if connStr = os.Getenv("INTEGRATION_TEST_DATABASE_URL"); connStr == "" {
-		connStr = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+		connStr = "postgres://postgres:postgres@localhost:55432/postgres?sslmode=disable"
 	}
 
 	return connStr
