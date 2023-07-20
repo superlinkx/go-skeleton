@@ -1,70 +1,50 @@
-//go:generate mockgen -destination=mocks/mock_messagegetter.go -package=mocks github.com/superlinkx/go-skeleton/services/messages MessageGetter
 package messages
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/superlinkx/go-skeleton/models"
 	"github.com/superlinkx/go-skeleton/postgres"
+	"github.com/superlinkx/go-skeleton/services/messages/internal/convertors"
+	"github.com/superlinkx/go-skeleton/services/messages/internal/filters"
 )
 
-type MessageGetter interface {
+type MessageStorer interface {
 	GetMessageById(context.Context, int64) (postgres.Message, error)
 	GetMessagesByIds(context.Context, []int64) ([]postgres.Message, error)
 	GetMessageIds(context.Context) ([]int64, error)
 }
 
 type MessageService struct {
-	messageRepo MessageGetter
+	messageRepo MessageStorer
 }
 
-type Message struct {
-	Message string `json:"message"`
-}
-
-func NewMessageService(repo MessageGetter) MessageService {
+func NewMessageService(repo MessageStorer) MessageService {
 	return MessageService{messageRepo: repo}
 }
 
-func GetHelloMessage() Message {
-	return Message{Message: "Welcome to the API"}
+func GetHelloMessage() models.Message {
+	return models.Message{Message: "Welcome to the API"}
 }
 
-func (s MessageService) GetDatabaseMessage(ctx context.Context, id int64) (Message, error) {
+func (s MessageService) GetDatabaseMessage(ctx context.Context, id int64) (models.Message, error) {
 	if message, err := s.messageRepo.GetMessageById(ctx, id); err != nil {
-		return Message{}, fmt.Errorf("failed to get message (id=%d): %w", id, err)
+		return models.Message{}, fmt.Errorf("failed to get message (id=%d): %w", id, err)
 	} else {
-		return Message{Message: message.Message}, nil
+		return models.Message{Message: message.Message}, nil
 	}
 }
 
-func (s MessageService) GetOddDatabaseMessages(ctx context.Context) ([]Message, error) {
+func (s MessageService) GetOddDatabaseMessages(ctx context.Context) ([]models.Message, error) {
 	if messageIds, err := s.messageRepo.GetMessageIds(ctx); err != nil {
-		return []Message{}, fmt.Errorf("failed to get message ids: %w", err)
+		return []models.Message{}, fmt.Errorf("failed to get message ids: %w", err)
 	} else {
-		oddIds := filterOddMessageIds(messageIds)
+		oddIds := filters.FilterToOddIntegers(messageIds)
 		if messages, err := s.messageRepo.GetMessagesByIds(ctx, oddIds); err != nil {
-			return []Message{}, fmt.Errorf("failed to get messages by ids: %w", err)
+			return []models.Message{}, fmt.Errorf("failed to get messages by ids: %w", err)
 		} else {
-			resultMessages := make([]Message, 0, len(messages))
-			for _, message := range messages {
-				resultMessages = append(resultMessages, Message{Message: message.Message})
-			}
-			return resultMessages, nil
+			return convertors.ConvertPostgresMessage(messages), nil
 		}
 	}
-}
-
-func filterOddMessageIds(messageIds []int64) []int64 {
-	var (
-		oddIds = make([]int64, 0, len(messageIds)/2)
-	)
-
-	for _, id := range messageIds {
-		if id%2 == 1 {
-			oddIds = append(oddIds, id)
-		}
-	}
-
-	return oddIds
 }

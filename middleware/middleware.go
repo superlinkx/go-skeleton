@@ -1,5 +1,3 @@
-//go:generate mockgen -destination=mocks/mock_routeruser.go -package=mocks github.com/superlinkx/go-skeleton/middleware RouterUser
-
 package middleware
 
 import (

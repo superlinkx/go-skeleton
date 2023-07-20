@@ -1,4 +1,3 @@
-//go:generate mockgen -destination=mocks/mock_handlers.go -package=mocks github.com/superlinkx/go-skeleton/handlers RouterHandler
 package handlers
 
 import (

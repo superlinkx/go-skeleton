@@ -9,3 +9,7 @@ WHERE id = ANY($1::bigint[]);
 -- name: GetMessageIds :many
 SELECT id FROM "messages"
 ORDER BY id;
+
+-- name: CreateMessage :exec
+INSERT INTO "messages" (text)
+VALUES ($1);

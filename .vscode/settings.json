@@ -2,4 +2,8 @@
   "go.toolsManagement.autoUpdate": true,
   "go.useLanguageServer": true,
   "gopls": {"ui.semanticTokens": true},
+  "go.buildTags": "integration,e2e",
+  "go.testEnvVars": {
+    "INTEGRATION_TEST_DATABASE_URL": "postgres://postgres:postgres@localhost:55432/postgres?sslmode=disable"
+  }
 }

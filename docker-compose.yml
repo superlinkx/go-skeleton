@@ -1,0 +1,14 @@
+version: '3'
+services:
+  testdb:
+    image: postgres:latest
+    restart: unless-stopped
+    volumes:
+      - testdb-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - 55432:5432
+
+volumes:
+  testdb-data:

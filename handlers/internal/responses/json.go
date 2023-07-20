@@ -1,4 +1,4 @@
-package utils
+package responses
 
 import (
 	"encoding/json"
@@ -10,6 +10,11 @@ import (
 var (
 	DefaultInternalServerError = []byte(`{"error_message": "internal server error", "code": 500}`)
 )
+
+type ResponseWriter interface {
+	Write([]byte) (int, error)
+	WriteHeader(int)
+}
 
 type ErrorMessage struct {
 	ErrorMessage string `json:"error_message"`
@@ -37,7 +42,7 @@ func JSONErrorResponse(w http.ResponseWriter, code int, err error) {
 	if result, err := json.Marshal(errorMessage); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		if _, err := w.Write(DefaultInternalServerError); err != nil {
-			log.Printf("Failed to write JSON result while processing an error writing an: %s", err)
+			log.Printf("Failed to write JSON result while processing error: %s", err)
 		}
 	} else {
 		w.WriteHeader(code)
